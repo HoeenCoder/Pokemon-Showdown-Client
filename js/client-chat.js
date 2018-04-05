@@ -1130,6 +1130,11 @@
 			app.send('/leave ' + this.id);
 			app.updateAutojoin();
 		},
+		requestLeave: function (e) {
+			if (this.id.substring(0, 5) !== 'help-') return true;
+			app.addPopup(TicketPopup, {room: this, sourceEl: e && e.currentTarget});
+			return false;
+		},
 		receive: function (data) {
 			this.add(data);
 		},
@@ -1734,6 +1739,20 @@
 				elem.remove();
 			}
 		}
+	});
+
+	var TicketPopup = this.TicketPopup = Popup.extend({
+		type: 'semimodal',
+		initialize: function (data) {
+			this.room = data.room;
+			var buf = '<form><p>Leaving the room will close this ticket.</p><p>Are you sure?</p><p><button type="submit"><strong>Close</strong></button> <button name="close" class="autofocus">Cancel</button></p></form>';
+			this.$el.html(buf);
+		},
+		submit: function (data) {
+			this.room.send('/helpticket close ' + this.room.id.substring(5));
+			app.removeRoom(this.room.id);
+			this.close();
+		},
 	});
 
 }).call(this, jQuery);

@@ -1485,6 +1485,24 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		const isHackmons = (format.includes('hackmons') || format.endsWith('bh'));
 		const isSTABmons = (format.includes('stabmons') || format === 'staaabmons');
 		const galarBornLegality = (format.includes('battlestadium') || format.startsWith('vgc') && this.dex.gen === 8);
+		const nextInLine = format.includes('nextinline');
+
+		// In the Next In Line formats, adjust the species for getting moves to the next species in the team
+		if (nextInLine) {
+			// @ts-ignore
+			const team = Storage.unpackTeam(app.rooms.teambuilder.curTeam.team);
+			let nextSpecies = '';
+			for (var i = 0; i < team.length; i++) {
+				// As per instructions from Petuh, assume only 1 species per team
+				// this will result in bugs client side if a user includes multiple species in a team
+				if (team[i].species === species.name) {
+					nextSpecies = team[(i + 1 >= team.length ? 0 : i + 1)].species;
+					break;
+				}
+			}
+
+			species = dex.getSpecies(nextSpecies);
+		}
 
 		const abilityid = this.set ? toID(this.set.ability) : '' as ID;
 		const itemid = this.set ? toID(this.set.item) : '' as ID;
